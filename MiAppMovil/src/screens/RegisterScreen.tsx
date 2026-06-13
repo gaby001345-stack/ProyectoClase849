@@ -3,50 +3,62 @@ import { Alert, StyleSheet, Text, View } from 'react-native';
 import ScreenWrapper from '../components/ScreenWrapper';
 import CustomInput from '../components/CustomInput';
 import CustomButton from '../components/CustomButton';
-import { supabase } from '../services/supabaseClient'; // 👈 importar el cliente
+import { supabase } from '../services/supabaseClient'; 
 
 const RegisterScreen = ({ navigation }: any) => {
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false); // 👈 para deshabilitar el botón mientras carga
+  const [loading, setLoading] = useState(false); 
 
   const handleRegister = async () => {
-    // Validación básica (Actividad 2)
-    if (!name.trim() || !phoneNumber.trim() || !email.trim() || !password.trim()) {
+    const cleanEmail = email.trim();
+    const cleanPassword = password.trim();
+    const cleanName = name.trim();
+    const cleanPhone = phoneNumber.trim();
+
+    // Validación previa (Actividad 2)
+    if (!cleanName || !cleanPhone || !cleanEmail || !cleanPassword) {
       Alert.alert('Campos incompletos', 'Por favor completa todos los campos.');
       return;
     }
 
     setLoading(true);
 
-    // Llamada a Supabase Auth
-    const { data, error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password: password.trim(),
-    });
-
-    setLoading(false);
-
-    // Manejo de error
-    if (error) {
-      Alert.alert('Error al registrarse', error.message);
-      return;
-    }
-
-    // Registro exitoso
-    if (data.user) {
-      Alert.alert(
-        '¡Registro exitoso!',
-        'Tu cuenta fue creada correctamente.',
-        [
-          {
-            text: 'Iniciar sesión',
-            onPress: () => navigation.navigate('Login'),
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: cleanEmail,
+        password: cleanPassword,
+        options: {
+          data: {
+            full_name: cleanName,
+            phone_number: cleanPhone,
           },
-        ]
-      );
+        },
+      });
+
+      if (error) {
+        Alert.alert('Error al registrarse', error.message);
+        return;
+      }
+
+      if (data.user) {
+        Alert.alert(
+          '¡Registro exitoso!',
+          'Tu cuenta fue creada correctamente.',
+          [
+            {
+              text: 'Iniciar sesión',
+              onPress: () => navigation.navigate('Login'),
+            },
+          ]
+        );
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Ocurrió un problema inesperado en el servidor.');
+    } finally { 
+      setLoading(false);
     }
   };
 
@@ -82,11 +94,13 @@ const RegisterScreen = ({ navigation }: any) => {
           type="password"
         />
 
-        <CustomButton
-          title={loading ? 'Registrando...' : 'Registrarse'}
-          variant="primary"
-          onPress={handleRegister}
-        />
+        <View style={styles.buttonContainer}>
+          <CustomButton
+            title={loading ? 'Registrando...' : 'Registrarse'}
+            variant="primary"
+            onPress={handleRegister}
+          />
+        </View>
       </View>
     </ScreenWrapper>
   );
@@ -96,14 +110,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
-    gap: 16,
     justifyContent: 'center',
   },
   title: {
     fontSize: 26,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 20,
     textAlign: 'center',
+  },
+  buttonContainer: {
+    alignItems: 'center',
+    marginTop: 10,
   },
 });
 

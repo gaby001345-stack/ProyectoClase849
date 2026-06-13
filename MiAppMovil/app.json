@@ -17,6 +17,7 @@
     },
     "android": {
       "adaptiveIcon": {
+        "package": "com.gabyportillo.miappskincare",
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
@@ -25,6 +26,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "e50e296b-6236-4bcd-9357-a17497dba6ff"
+      }
     }
   }
 }
