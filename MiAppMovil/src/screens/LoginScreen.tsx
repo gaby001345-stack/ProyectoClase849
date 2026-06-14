@@ -41,10 +41,10 @@ const LoginScreen = ({ navigation }: any) => {
   };
 
   const handleGoogleLogin = async () => {
-    try {
-    // esto hace que automáticamente la URL compatible con Expo Go en desarrollo
+  try {
+    
     const redirectUrl = Linking.createURL('/auth/v1/callback');
-    console.log("URL de redirección real para Expo:", redirectUrl);
+    console.log("URL de redirección para Expo:", redirectUrl);
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -59,27 +59,55 @@ const LoginScreen = ({ navigation }: any) => {
       return;
     }
 
-      if (data?.url) {
-        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+    if (data?.url) {
+      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+      
+      //Si el navegador se cierra con éxito ('success'), procesamos la URL de regreso
+      if (result.type === 'success' && result.url) {
         
-        if (result.type === 'success' && result.url) {
-          const parsedUrl = Linking.parse(result.url);
-          const { access_token, refresh_token } = parsedUrl.queryParams || {};
+        const parsedUrl = Linking.parse(result.url);
+        const { access_token, refresh_token } = parsedUrl.queryParams || {};
 
-          if (access_token && refresh_token) {
+        if (access_token && refresh_token) {
+          // Le inyectamos los tokens manualmente al cliente de Supabase en la app
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: access_token as string,
+            refresh_token: refresh_token as string,
+          });
+
+          if (sessionError) {
+            Alert.alert('Error al crear sesión', sessionError.message);
+            return;
+          }
+
+          console.log('¡Inicio de sesión con Google exitoso!');
+          
+          navigation.navigate('MainTabs');
+        } else {
+          const extractToken = (url: string, key: string) => {
+            const matches = url.match(new RegExp(`${key}=([^&]*)`));
+            return matches ? matches[1] : null;
+          };
+
+          const hashToken = extractToken(result.url, 'access_token');
+          const hashRefresh = extractToken(result.url, 'refresh_token');
+
+          if (hashToken && hashRefresh) {
             await supabase.auth.setSession({
-              access_token: access_token as string,
-              refresh_token: refresh_token as string,
+              access_token: hashToken,
+              refresh_token: hashRefresh,
             });
-            console.log('¡Inicio de sesión con Google exitoso!');
             navigation.navigate('MainTabs');
+          } else {
+            Alert.alert('Error', 'No se pudieron recuperar los tokens de inicio de sesión.');
           }
         }
       }
-    } catch (err) {
-      Alert.alert('Error', 'Ocurrió un error al intentar conectar con Google.');
     }
-  };
+  } catch (err) {
+    Alert.alert('Error', 'Ocurrió un error inesperado al conectar con Google.');
+  }
+};
 
   return (
     <ScreenWrapper>
