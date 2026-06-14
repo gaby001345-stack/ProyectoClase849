@@ -47,9 +47,9 @@ const LoginScreen = ({ navigation }: any) => {
 
   const handleGoogleLogin = async () => {
     try {
-    const redirectUrl = Linking.createURL('', { scheme: 'skincaretracker' });
-    console.log("URL de redirección generada:", redirectUrl); 
-    // Esto generará algo como: skincaretracker://
+    // esto hace que automáticamente la URL compatible con Expo Go en desarrollo
+    const redirectUrl = Linking.createURL('/auth/v1/callback');
+    console.log("URL de redirección real para Expo:", redirectUrl);
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -59,10 +59,10 @@ const LoginScreen = ({ navigation }: any) => {
       },
     });
 
-      if (error) {
-        Alert.alert('Error de autenticación', error.message);
-        return;
-      }
+    if (error) {
+      Alert.alert('Error de autenticación', error.message);
+      return;
+    }
 
       if (data?.url) {
         const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);

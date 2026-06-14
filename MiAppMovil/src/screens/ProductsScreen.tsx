@@ -59,30 +59,43 @@ const ProductsScreen = () => {
 
     setLoading(true);
 
-    const { error } = await supabase
-      .from('products')
-      .insert([{
-        name: name.trim(),
-        brand: brand.trim(),
-        category,
-      }])
-      .select();
+    try {
+    //Obtener de forma segura el usuario que tiene la sesión activa
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-    setLoading(false);
+      if (userError || !user) {
+        Alert.alert('Error', 'No se pudo verificar la sesión del usuario.');
+        setLoading(false);
+        return;
+      }
 
-    if (error) {
-      Alert.alert('Error', error.message);
-      return;
+      //Insertar el producto asociándolo a su user_id
+      const { error } = await supabase
+        .from('products')
+        .insert([{
+          name: name.trim(),
+          brand: brand.trim(),
+          category,
+          user_id: user.id,
+        }])
+        .select();
+
+      if (error) {
+        Alert.alert('Error al guardar', error.message);
+        return;
+      }
+
+      setName('');
+      setBrand('');
+      setCategory(CATEGORIES[0]);
+      setShowForm(false);
+      fetchProducts();
+
+    } catch (err) {
+      Alert.alert('Error inesperado', 'Ocurrió un problema al conectar con el servidor.');
+    } finally {
+      setLoading(false);
     }
-
-    // Limpiar formulario
-    setName('');
-    setBrand('');
-    setCategory(CATEGORIES[0]);
-    setShowForm(false);
-
-    // Recargar lista
-    fetchProducts();
   };
 
   // ─── Render de cada producto ─────────────────────────────────
