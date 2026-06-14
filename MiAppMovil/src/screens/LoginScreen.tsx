@@ -14,7 +14,7 @@ const LoginScreen = ({ navigation }: any) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // 1. Login tradicional con Correo y Contraseña
+  // Login tradicional con Correo y Contraseña
   const handleEmailLogin = async () => {
     const cleanEmail = email.trim();
     const cleanPassword = password.trim();
@@ -45,10 +45,11 @@ const LoginScreen = ({ navigation }: any) => {
     }
   };
 
-  // 2. Login con Google (SSO)
   const handleGoogleLogin = async () => {
     try {
-      const redirectUrl = Linking.createURL('/auth/v1/callback');
+      // 1. Usamos el esquema nativo que acabas de configurar en el app.json
+      const redirectUrl = Linking.createURL('$path'); 
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -88,7 +89,7 @@ const LoginScreen = ({ navigation }: any) => {
       <View style={styles.container}>
         <Text style={styles.title}>Iniciar sesión</Text>
 
-        {/* Inputs para inicio tradicional */}
+    
         <CustomInput
           placeholder="Correo electrónico"
           value={email}
@@ -103,7 +104,7 @@ const LoginScreen = ({ navigation }: any) => {
           type="password"
         />
 
-        {/* Botón de ingreso tradicional */}
+     
         <View style={styles.buttonContainer}>
           <CustomButton
             title={loading ? 'Cargando...' : 'Ingresar'}
@@ -112,10 +113,10 @@ const LoginScreen = ({ navigation }: any) => {
           />
         </View>
 
-        {/* Separador estético visual */}
+
         <Text style={styles.separatorText}>O también</Text>
 
-        {/* Botón SSO Google */}
+  
         <View style={styles.buttonContainer}>
           <CustomButton
             title="Continuar con Google"
@@ -124,7 +125,6 @@ const LoginScreen = ({ navigation }: any) => {
           />
         </View>
 
-        {/* Enlace de navegación hacia la pantalla de Registro */}
         <TouchableOpacity 
           style={styles.registerLink} 
           onPress={() => navigation.navigate('Register')}
