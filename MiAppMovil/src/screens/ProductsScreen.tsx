@@ -32,17 +32,33 @@ const ProductsScreen = () => {
 
   // ─── GET Products ───────────────────────────────────────────
   const fetchProducts = async () => {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false });
+    try {
+      //Obtenemos el usuario que tiene la sesión activa en el celular
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-    if (error) {
-      Alert.alert('Error', error.message);
-      return;
+      if (userError || !user) {
+        console.log("No se pudo obtener el usuario para cargar productos.");
+        return;
+      }
+
+      //Traemos únicamente los productos cuyo user_id coincida con el mío
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        Alert.alert('Error', error.message);
+        return;
+      }
+
+      if (data) {
+        setProducts(data);
+      }
+    } catch (err) {
+      console.log("Error inesperado al cargar productos:", err);
     }
-
-    if (data) setProducts(data);
   };
 
   // Carga los productos al montar el componente
