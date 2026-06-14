@@ -47,16 +47,17 @@ const LoginScreen = ({ navigation }: any) => {
 
   const handleGoogleLogin = async () => {
     try {
-      // 1. Usamos el esquema nativo que acabas de configurar en el app.json
-      const redirectUrl = Linking.createURL('$path'); 
-      
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUrl,
-          skipBrowserRedirect: true,
-        },
-      });
+    const redirectUrl = Linking.createURL('', { scheme: 'skincaretracker' });
+    console.log("URL de redirección generada:", redirectUrl); 
+    // Esto generará algo como: skincaretracker://
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: redirectUrl,
+        skipBrowserRedirect: true,
+      },
+    });
 
       if (error) {
         Alert.alert('Error de autenticación', error.message);
