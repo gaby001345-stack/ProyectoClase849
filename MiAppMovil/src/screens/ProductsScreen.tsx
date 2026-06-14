@@ -110,55 +110,58 @@ const ProductsScreen = () => {
   return (
     <ScreenWrapper>
       <View style={styles.container}>
-        <Text style={styles.title}>Mis Productos</Text>
+        <FlatList
+          data={products}
+          keyExtractor={(item) => item.id}
+          renderItem={renderProduct}
+          style={styles.list}
+          
+          ListHeaderComponent={
+            <View style={{ gap: 16, marginBottom: 16 }}>
+              <Text style={styles.title}>Mis Productos</Text>
 
-        {/* Botón para mostrar/ocultar formulario */}
-        <CustomButton
-          title={showForm ? 'Cancelar' : '+ Agregar Producto'}
-          variant="primary"
-          onPress={() => setShowForm(!showForm)}
+              <CustomButton
+                title={showForm ? 'Cancelar' : '+ Agregar Producto'}
+                variant="primary"
+                onPress={() => setShowForm(!showForm)}
+              />
+
+              {showForm && (
+                <View style={styles.form}>
+                  <CustomInput
+                    placeholder="Nombre del producto"
+                    value={name}
+                    onChange={setName}
+                  />
+
+                  <CustomInput
+                    placeholder="Marca"
+                    value={brand}
+                    onChange={setBrand}
+                  />
+
+                  <CustomInput
+                    placeholder="Categoría"
+                    value={category}
+                    onChange={setCategory}
+                  />
+
+                  <CustomButton
+                    title={loading ? 'Guardando...' : 'Guardar Producto'}
+                    variant="primary"
+                    onPress={handleAddProduct}
+                  />
+                </View>
+              )}
+            </View>
+          }
+
+          ListEmptyComponent={
+            !showForm ? (
+              <Text style={styles.empty}>No hay productos aún.</Text>
+            ) : null
+          }
         />
-
-        {/* Formulario de nuevo producto */}
-        {showForm && (
-          <View style={styles.form}>
-            <CustomInput
-              placeholder="Nombre del producto"
-              value={name}
-              onChange={setName}
-            />
-
-            <CustomInput
-              placeholder="Marca"
-              value={brand}
-              onChange={setBrand}
-            />
-
-            <CustomInput
-              placeholder="Categoría"
-              value={category}
-              onChange={setCategory}
-            />
-
-            <CustomButton
-              title={loading ? 'Guardando...' : 'Guardar Producto'}
-              variant="primary"
-              onPress={handleAddProduct}
-            />
-          </View>
-        )}
-
-        {/* Lista de productos */}
-        {products.length === 0 ? (
-          <Text style={styles.empty}>No hay productos aún.</Text>
-        ) : (
-          <FlatList
-            data={products}
-            keyExtractor={(item) => item.id}
-            renderItem={renderProduct}
-            style={styles.list}
-          />
-        )}
       </View>
     </ScreenWrapper>
   );
@@ -175,6 +178,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 8,
+    color: "#5b8def"
   },
   form: {
     gap: 12,
