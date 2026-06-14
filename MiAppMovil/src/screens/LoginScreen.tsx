@@ -9,39 +9,34 @@ import * as Linking from 'expo-linking';
 
 WebBrowser.maybeCompleteAuthSession();
 
+// Asegúrate de recibir el prop 'navigation' en tu componente de la pantalla
 const LoginScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Login tradicional con Correo y Contraseña
   const handleEmailLogin = async () => {
-    const cleanEmail = email.trim();
-    const cleanPassword = password.trim();
-
-    if (!cleanEmail || !cleanPassword) {
+    if (!email.trim() || !password.trim()) {
       Alert.alert('Campos vacíos', 'Por favor ingresa tu correo y contraseña.');
       return;
     }
 
     setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: cleanEmail,
-        password: cleanPassword,
-      });
 
-      if (error) {
-        Alert.alert('Error de inicio de sesión', error.message);
-        return;
-      }
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password: password.trim(),
+    });
 
-      console.log('¡Inicio de sesión tradicional exitoso!');
-      // Aquí puedes navegar a tu pantalla principal (Home) si ya la tienes creada
-    } catch (err) {
-      Alert.alert('Error', 'Ocurrió un error inesperado.');
-    } finally {
-      setLoading(false);
+    setLoading(false);
+
+    if (error) {
+      Alert.alert('Error de Inicio de Sesión', error.message);
+      return;
+    }
+  
+    if (data.user) {
+      navigation.navigate('MainTabs'); 
     }
   };
 
@@ -77,6 +72,7 @@ const LoginScreen = ({ navigation }: any) => {
               refresh_token: refresh_token as string,
             });
             console.log('¡Inicio de sesión con Google exitoso!');
+            navigation.navigate('MainTabs');
           }
         }
       }
